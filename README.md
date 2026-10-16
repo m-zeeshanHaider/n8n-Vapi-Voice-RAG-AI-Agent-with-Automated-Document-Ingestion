@@ -1,8 +1,8 @@
 # Vapi Supabase Voice RAG Agent
 
-![Illustration of a robot assistant with a headset and microphone next to the n8n and Vapi logos](images/thumbnail.png)
-
 An n8n workflow that answers Vapi voice-assistant questions from a Supabase vector knowledge base. It receives a tool call through a webhook and returns a one-sentence answer with a source citation.
+
+![Illustration of a robot assistant with a headset and microphone next to the n8n and Vapi logos](images/thumbnail.png)
 
 ## Overview
 
