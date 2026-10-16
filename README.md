@@ -1,79 +1,76 @@
 # Vapi Supabase Voice RAG Agent
 
-An n8n workflow that answers Vapi voice-assistant questions from a Supabase vector knowledge base. It receives a tool call through a webhook and returns a one-sentence answer with a source citation.
+An n8n workflow that answers voice assistant questions from a Supabase vector database. It receives a Vapi tool call over a webhook and returns a one-sentence answer with a source citation.
 
-![Illustration of a robot assistant with a headset and microphone next to the n8n and Vapi logos](images/thumbnail.png)
+![Illustration of a friendly headset robot beside the n8n and Vapi logos, a document with a magnifying glass, and a microphone](images/thumbnail.png)
 
 ## Overview
 
-Vapi sends each spoken question to an n8n webhook as a tool call. An AI agent searches a Supabase vector store, reranks the matches with Cohere, and writes a single-sentence answer that cites its source. Postgres chat memory keeps recent exchanges, so follow-up questions resolve against earlier ones. The workflow returns the answer in the response format Vapi expects.
+The system gives a Vapi voice assistant a knowledge base to query. Vapi sends the caller's question to an n8n webhook. An AI agent searches a Supabase vector store of embedded documents, reranks the matches, and writes a one-sentence answer from them. The answer goes back to Vapi in the tool call response format.
 
-The screenshot below shows a document ingestion pipeline for the vector store. A Google Drive trigger fires when a file is created, the file is downloaded, and a Supabase Vector Store node receives it with Google Gemini embeddings and a default data loader.
-
-![Workflow canvas with a Webhook trigger, an AI Agent connected to a Gemini chat model, Postgres chat memory and a Supabase vector database tool with Gemini embeddings, followed by an Edit Fields node and a Respond to Webhook node](images/Vapi-Voice-RAG-AI-Agent-with-Automated-Document-Ingestion-1.PNG)
+![Canvas view of the workflow: a Webhook node feeds an AI Agent node, which has a Gemini chat model, Postgres chat memory, and a Supabase vector database tool with Gemini embeddings attached, followed by an Edit Fields node and a Respond to Webhook node](images/Vapi-Voice-RAG-AI-Agent-with-Automated-Document-Ingestion-1.PNG)
 
 ## Workflows
 
 | Workflow | Trigger | Purpose |
 | --- | --- | --- |
-| Vapi Supabase Voice RAG Agent | Webhook (POST) | Answers a spoken query from the Supabase knowledge base in one cited sentence. |
+| Vapi Supabase Voice RAG Agent | Webhook (POST) | Answers a Vapi tool call question from the Supabase knowledge base and returns the answer to Vapi. |
 
 ## Workflow Details
 
 ### Vapi Supabase Voice RAG Agent
 
-This workflow turns a Vapi tool call into a retrieval-based answer and sends it back to Vapi.
+This workflow turns a Vapi tool call into a cited, one-sentence answer retrieved from a vector database.
 
-**Trigger:** a Webhook node that accepts POST requests and holds the connection open until the Respond to Webhook node replies.
+**Trigger:** A Webhook node accepts POST requests and holds the response until a Respond to Webhook node replies.
 
 Execution steps:
 
-1. The Webhook node receives the request.
-2. The AI Agent reads the query from the tool call in the request body.
-3. The agent loads the last 10 messages from the Postgres Chat Memory node.
-4. The agent calls the Supabase Vector Database tool, which embeds the query with Embeddings Gemini and retrieves the top 10 matches.
-5. The Reranker Cohere node reorders the matches by relevance.
-6. The Gemini 2.5 Flash Chat Model writes the answer, and the Gemini 2.5 Flash Lite Chat Model serves as the fallback model.
-7. A Set node named "Remove '"' from Output" strips double quotation marks from the answer.
-8. The Respond to Webhook node returns JSON containing the tool call identifier and the answer.
+1. The Webhook node receives the Vapi request, which contains a tool call.
+2. The AI Agent node takes the `query` argument of the first tool call as its prompt.
+3. The agent loads the last 10 messages from Postgres Chat Memory.
+4. The agent calls the Supabase Vector Database tool, which embeds the query with Google Gemini embeddings and retrieves the 10 closest document chunks.
+5. A Cohere reranker reorders the retrieved chunks by relevance.
+6. A Google Gemini 2.5 Flash chat model writes the answer. The agent falls back to Gemini 2.5 Flash Lite if the primary model fails.
+7. The Set node removes double quote characters from the agent output.
+8. The Respond to Webhook node returns a JSON body with the tool call ID from the request and the answer as the result.
 
-Agent behavior is set by its system prompt:
+Agent behavior:
 
-- The answer is exactly one sentence followed by a source citation on a separate line.
-- The agent uses only information retrieved from the vector store.
-- When retrieval returns nothing, the agent replies that no relevant information was found in the knowledge base.
-- The agent uses chat memory to resolve follow-up questions such as "Why did that happen?".
+- The system message limits every answer to one sentence followed by a source citation.
+- The agent answers only from retrieved documents.
+- The agent replies "No relevant information found in the knowledge base." when retrieval returns nothing.
+- The memory session key combines the workflow and execution identifiers, so each webhook call starts a new session.
+- The AI Agent, Webhook, Set, and Respond to Webhook nodes retry on failure.
 
-Branching and loops: the workflow has no branches, loops, or sub-workflow calls. The nodes run in a single line from the Webhook to the response.
+Branching and loops: the workflow has no branches, loops, or sub-workflow calls. The workflow settings reference an error workflow that is not part of this repository.
 
-Error handling: the workflow settings reference an error workflow. The Webhook, AI Agent, Set, and Respond to Webhook nodes have retry on failure enabled.
-
-Integrations: Vapi, Supabase, Postgres, Google Gemini, Cohere.
+Integrations: Vapi, Google Gemini, Supabase, PostgreSQL, Cohere.
 
 ## Integrations
 
-- Vapi: sends the tool call and receives the answer.
-- Supabase: stores the vector knowledge base searched by the agent.
-- Postgres: stores chat memory.
-- Google Gemini: provides the chat models and the embeddings.
-- Cohere: reranks retrieved matches.
-- Google Drive: triggers the ingestion pipeline and supplies its files.
+- Vapi sends the tool call and receives the answer.
+- Google Gemini provides the chat models and the embeddings.
+- Supabase stores the document vectors and serves the similarity search.
+- PostgreSQL stores the chat memory.
+- Cohere reranks the retrieved chunks.
 
 ## Prerequisites
 
-- An n8n instance with the LangChain AI nodes available.
-- A Google Gemini (PaLM) API credential.
-- A Supabase API credential and a Supabase project with a vector table and a matching search function.
-- A Postgres credential for chat memory.
-- A Cohere API credential.
-- A Vapi account configured to call the webhook as a tool.
-- A Google Drive credential, required only for the ingestion pipeline.
+- An n8n instance with the AI (LangChain) nodes available.
+- A Vapi account with a tool configured to call the webhook.
+- A Supabase project with a vector table of embedded documents and a matching search function.
+- A PostgreSQL database that n8n can reach.
+- A Google AI account for Gemini.
+- A Cohere account.
+- Credentials of these types in n8n: Supabase API, Postgres, Google Gemini (PaLM) API, and Cohere API.
 
 ## Setup
 
-1. Import `Vapi_Supabase_Voice_RAG_Agent.json` from the `workflows` directory into n8n.
-2. Create the Google Gemini (PaLM) API, Supabase API, Postgres, and Cohere API credentials in n8n.
-3. Assign each credential to the matching node: the two Gemini chat models, Embeddings Gemini, Supabase Vector Database, Postgres Chat Memory, and Reranker Cohere.
-4. Review the node parameters, including the vector table, the search function, and the memory session key.
-5. Copy the production webhook URL from the Webhook node into the Vapi tool configuration.
+1. Import `workflows/Vapi_Supabase_Voice_RAG_Agent.json` into n8n.
+2. Create a credential in n8n for each type listed under Prerequisites.
+3. Assign the credentials to the Postgres Chat Memory, Supabase Vector Database, Embeddings Gemini, Reranker Cohere, and both Gemini chat model nodes.
+4. Open the Supabase Vector Database node and select your vector table and search function.
+5. In the workflow settings, select your own error workflow or clear the error workflow setting.
 6. Activate the workflow.
+7. Configure your Vapi tool to send POST requests to the production URL of the Webhook node.
