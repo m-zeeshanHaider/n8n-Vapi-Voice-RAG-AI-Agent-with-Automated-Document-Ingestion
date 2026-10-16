@@ -10,9 +10,7 @@ Vapi sends each spoken question to an n8n webhook as a tool call. An AI agent se
 
 The screenshot below shows a document ingestion pipeline for the vector store. A Google Drive trigger fires when a file is created, the file is downloaded, and a Supabase Vector Store node receives it with Google Gemini embeddings and a default data loader.
 
-![Document ingestion pipeline with a Google Drive Trigger, a Download file node, and a Supabase Vector Store node connected to Embeddings Google Gemini and Default Data Loader](images/Vapi-Voice-RAG-AI-Agent-with-Automated-Document-Ingestion-1.PNG)
-
-![Workflow canvas with a Webhook trigger, an AI Agent connected to a Gemini chat model, Postgres chat memory and a Supabase vector database tool with Gemini embeddings, followed by an Edit Fields node and a Respond to Webhook node](images/Vapi-Voice-RAG-AI-Agent-with-Automated-Document-Ingestion-2.PNG)
+![Workflow canvas with a Webhook trigger, an AI Agent connected to a Gemini chat model, Postgres chat memory and a Supabase vector database tool with Gemini embeddings, followed by an Edit Fields node and a Respond to Webhook node](images/Vapi-Voice-RAG-AI-Agent-with-Automated-Document-Ingestion-1.PNG)
 
 ## Workflows
 
