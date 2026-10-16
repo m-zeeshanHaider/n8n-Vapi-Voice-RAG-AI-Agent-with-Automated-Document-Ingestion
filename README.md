@@ -12,6 +12,8 @@ The screenshot below shows a document ingestion pipeline for the vector store. A
 
 ![Document ingestion pipeline with a Google Drive Trigger, a Download file node, and a Supabase Vector Store node connected to Embeddings Google Gemini and Default Data Loader](images/Vapi-Voice-RAG-AI-Agent-with-Automated-Document-Ingestion-1.PNG)
 
+![Workflow canvas with a Webhook trigger, an AI Agent connected to a Gemini chat model, Postgres chat memory and a Supabase vector database tool with Gemini embeddings, followed by an Edit Fields node and a Respond to Webhook node](images/Vapi-Voice-RAG-AI-Agent-with-Automated-Document-Ingestion-2.PNG)
+
 ## Workflows
 
 | Workflow | Trigger | Purpose |
@@ -49,8 +51,6 @@ Branching and loops: the workflow has no branches, loops, or sub-workflow calls.
 Error handling: the workflow settings reference an error workflow. The Webhook, AI Agent, Set, and Respond to Webhook nodes have retry on failure enabled.
 
 Integrations: Vapi, Supabase, Postgres, Google Gemini, Cohere.
-
-![Workflow canvas with a Webhook trigger, an AI Agent connected to a Gemini chat model, Postgres chat memory and a Supabase vector database tool with Gemini embeddings, followed by an Edit Fields node and a Respond to Webhook node](images/Vapi-Voice-RAG-AI-Agent-with-Automated-Document-Ingestion-2.PNG)
 
 ## Integrations
 
