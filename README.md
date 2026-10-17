@@ -43,8 +43,6 @@ Agent behavior:
 - The memory session key combines the workflow and execution identifiers, so each webhook call starts a new session.
 - The AI Agent, Webhook, Set, and Respond to Webhook nodes retry on failure.
 
-Branching and loops: the workflow has no branches, loops, or sub-workflow calls. The workflow settings reference an error workflow that is not part of this repository.
-
 Integrations: Vapi, Google Gemini, Supabase, PostgreSQL, Cohere.
 
 ## Integrations
